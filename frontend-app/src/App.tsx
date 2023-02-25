@@ -1,82 +1,102 @@
-import { Autocomplete, TextField } from "@mui/material";
+import { AppBar, Autocomplete, Box, Button, IconButton, TextField, Toolbar, Typography } from "@mui/material";
+import { Container } from "@mui/system";
 import React, { useEffect, useState } from "react"
 import './App.css';
+import PokeCard from "./components/poke-card";
 import pokeapiService from "./services/pokeapi-service";
 
 function App() {
-  const [allPokemon, setAllPokemon] = useState<any[]>([]);
-  const [pokemon, setPokemon] = useState<any>();
+	const [allPokemon, setAllPokemon] = useState<any[]>([]);
+	const [pokemon, setPokemon] = useState<any>();
+	const [species, setPokemonSpecies] = useState<any>();
 
-  const fetchAllPokemon = async () => {
-    const { data } = await pokeapiService.getAllPokemon();
+	const fetchAllPokemon = async () => {
+		const { data } = await pokeapiService.getAllPokemon();
 
-    const results: any[] = data.results;
+		let results: any[] = data.results;
 
-    const pokeNames = results.map((poke: any, index) => {
-      const urlBits = JSON.stringify(poke.url).split('/');
+		const pokeNames = results.map((poke: any, index) => {
+			const urlBits = JSON.stringify(poke.url).split('/');
 
-      // need 2nd to last
-      const id = urlBits[urlBits.length - 2]
+			// need 2nd to last
+			const id = urlBits[urlBits.length - 2]
 
-      return {
-        "label": poke.name,
-        "id": id
-      }
-    });
+			return {
+				"label": poke.name as string,
+				"id": id
+			}
+		});
 
-    setAllPokemon(pokeNames);
-  }
+		const sorted = pokeNames.sort((a, b) => { return a.label.localeCompare(b.label) });
 
-  const fetchPokemon = async (name: string) => {
-    console.log('Fetch One Poke with: ', name);
+		setAllPokemon(sorted);
+	}
 
-    const poke = allPokemon.find(p => p.label === name);
+	const fetchPokemon = async (name: string) => {
+		console.log('Fetch One Poke with: ', name);
 
-    if (poke) {
-      console.log('Poke in data?', poke);
+		const poke = allPokemon.find(p => p.label === name);
 
-      const { data } = await pokeapiService.getPokemon(poke.id);
+		if (poke) {
+			console.log('Poke in data?', poke);
 
-      console.log(data);
-      setPokemon(data);
-    }
-  }
+			const pokemonPromise = pokeapiService.getPokemon(poke.id);
+			const speciesPromise = pokeapiService.getSpecies(poke.id);
 
-  useEffect(() => {
-    fetchAllPokemon();
-  }, []);
+			Promise.all([pokemonPromise, speciesPromise]).then(([details, species]) => {
+				console.log(details);
+				setPokemon(details.data);
+				console.log(species);
+				setPokemonSpecies(species.data);
+			});
+		}
+	}
 
-  return (
-    <>
-      <Autocomplete
-        disablePortal
-        id="combo-box-demo"
-        options={allPokemon}
-        sx={{ width: 300 }}
-        renderInput={(params) => <TextField {...params} label="Pick a Pokemon" />}
-        onInputChange={(event, newInputValue) => {
-          fetchPokemon(newInputValue);
-        }}
-      />
+	useEffect(() => {
+		fetchAllPokemon();
+	}, []);
 
-      {pokemon &&
-        <div>
-          <h1>{pokemon.name}</h1>
+	return (
+		<>
+			<Box sx={{ flexGrow: 1 }}>
+				<AppBar position="static">
+					<Toolbar>
+						<IconButton
+							size="large"
+							edge="start"
+							color="inherit"
+							aria-label="menu"
+							sx={{ mr: 2 }}
+						>
+						</IconButton>
+						<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+							Pokedex
+						</Typography>
+						<Button color="inherit">Wefler</Button>
+					</Toolbar>
+				</AppBar>
 
-          <img src={pokemon.sprites.front_default} alt="Front default"/>
-          <img src={pokemon.sprites.back_default} alt="Back default"/>
-          <img src={pokemon.sprites.front_shiny} alt="Front shiny"/>
-          <img src={pokemon.sprites.back_shiny} alt="Back shiny"/>
-        </div>
-      }
+				<Container>
+					<Box sx={{ marginTop: 4 }}>
+						<Autocomplete
+							disablePortal
+							id="combo-box-demo"
+							options={allPokemon}
+							sx={{ width: 300 }}
+							renderInput={(params) => <TextField {...params} label="Pick a Pokemon" />}
+							onInputChange={(event, newInputValue) => {
+								fetchPokemon(newInputValue);
+							}}
+						/>
 
-      {/* {pokemon.map((p, index) => (
-      <>
-      <p>{p.name}</p>
-      </>
-    ))} */}
-    </>
-  );
+						{pokemon && species &&
+							<PokeCard pokemon={pokemon} species={species}/>
+						}
+					</Box>
+				</Container>
+			</Box>
+		</>
+	);
 }
 
 export default App;
