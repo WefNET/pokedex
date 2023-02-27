@@ -3,9 +3,10 @@ import { Container } from "@mui/system";
 import React, { useEffect, useState } from "react"
 import './App.css';
 import PokeCard from "./components/poke-card";
-import pokeapiService from "./services/pokeapi-service";
+import PokeAPIService from "./services/pokeapi-service";
 
 function App() {
+  const pokeapiService = new PokeAPIService();
 	const [allPokemon, setAllPokemon] = useState<any[]>([]);
 	const [pokemon, setPokemon] = useState<any>();
 	const [species, setPokemonSpecies] = useState<any>();
@@ -54,7 +55,7 @@ function App() {
 
 	useEffect(() => {
 		fetchAllPokemon();
-	}, []);
+	});
 
 	return (
 		<>

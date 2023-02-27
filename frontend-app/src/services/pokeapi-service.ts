@@ -1,6 +1,6 @@
 import http from "./http-common";
 
-class PokeAPIService {
+export default class PokeAPIService {
     getAllPokemon() {
         return http.get<any>('pokemon?limit=2000');
     }
@@ -13,5 +13,3 @@ class PokeAPIService {
 		return http.get<any>(`pokemon-species/${id}`);
 	}
 }
-
-export default new PokeAPIService();

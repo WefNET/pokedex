@@ -1,4 +1,4 @@
-import { Card, CardMedia, CardContent, Typography, CardActions, Button } from "@mui/material";
+import { Card, CardMedia, CardContent, Typography } from "@mui/material";
 
 const PokeCard = (props: any) => {
 	console.log('Poke in Card: ', props);
