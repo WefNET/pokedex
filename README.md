@@ -11,6 +11,7 @@
 
 ## Less Good, needs, not done
 
+- History use case
 - Wait indicators
 - Null checks across the board
 - Jest testing
